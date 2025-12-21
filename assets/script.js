@@ -3,10 +3,8 @@ import { getFirestore, collection, getDocs, deleteDoc, doc }
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "XXXX",
-  authDomain: "XXXX",
-  projectId: "XXXX",
-  storageBucket: "XXXX",
+  apiKey: "AIzaSyCTV1GjkC_vuEQelMVOgWSawsK2i8jhSu4",
+  projectId: "smart-lock-genius-kods",
 };
 
 const app = initializeApp(firebaseConfig);
