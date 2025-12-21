@@ -1,3 +1,81 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "XXXX",
+  authDomain: "XXXX",
+  projectId: "XXXX",
+  storageBucket: "XXXX",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function loadCapturedImages() {
+  const table = document.getElementById("imagesTable");
+  table.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "images"));
+
+  let i = 1;
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const date = new Date(data.timestamp * 1000);
+
+    table.innerHTML += `
+      <tr class="border-b dark:border-slate-700">
+        <td class="p-2">${i++}</td>
+        <td class="p-2">${data.timestamp}</td>
+        <td class="p-2">${date.toLocaleString()}</td>
+        <td class="p-2 space-x-2">
+          <button class="btn-blue"
+            onclick="viewImage('${docSnap.id}')">
+            View
+          </button>
+          <button class="btn-red"
+            onclick="deleteImage('${docSnap.id}')">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  if (i === 1) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="4" class="p-3 text-center text-gray-500">
+          No images found
+        </td>
+      </tr>`;
+  }
+}
+
+async function viewImage(docId) {
+  const snap = await getDoc(doc(db, "images", docId));
+  if (!snap.exists()) return;
+
+  const base64 = snap.data().image;
+
+  const img = document.getElementById("modalImage");
+  img.src = `data:image/jpeg;base64,${base64}`;
+
+  document.getElementById("imageModal").classList.remove("hidden");
+}
+
+function closeImageModal() {
+  document.getElementById("imageModal").classList.add("hidden");
+  document.getElementById("modalImage").src = "";
+}
+
+async function deleteImage(docId) {
+  if (!confirm("Delete this image?")) return;
+
+  await deleteDoc(doc(db, "images", docId));
+  loadCapturedImages();
+}
+
 tailwind.config = {
     darkMode: 'class'
 }
@@ -15,6 +93,9 @@ function navigate(id) {
     document.getElementById('pageTitle').innerText =
         id.charAt(0).toUpperCase() + id.slice(1);
     if (window.innerWidth < 768) toggleSidebar();
+    if (id === "stream") {
+      loadCapturedImages();
+    }
 }
 
 function toggleDarkMode() {
@@ -161,3 +242,8 @@ function factoryReset() {
         status.innerText = "✅ Factory reset done! Wait for few seconds!";
     })
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  navigate("stream");
+  setInterval(loadCapturedImages, 10000);
+});
