@@ -39,3 +39,7 @@
     padding:8px;
     border-radius:6px;
 }
+
+#imagesTable::-webkit-scrollbar {
+    width: 6px;
+}
