@@ -35,9 +35,9 @@ if (localStorage.theme === 'dark') {
 }
 updateIcon();
 
-const STREAM_URL = "http://{{CAM_IP}}:81/stream";
-const STREAM_CTL = "http://{{CAM_IP}}/streamctl?on=";
-const CAPTURE_URL = "http://{{CAM_IP}}/capture";
+const STREAM_URL = "http://"+ CAM_IP + ":81/stream";
+const STREAM_CTL = "http://"+ CAM_IP + "/streamctl?on=";
+const CAPTURE_URL = "http://"+ CAM_IP + "/capture";
 
 const streamFrame = document.getElementById("streamFrame");
 
@@ -89,7 +89,7 @@ function captureImage() {
       });
 }
 
-const WIFI_API = "http://{{CAM_IP}}";
+const WIFI_API = "http://"+ CAM_IP;
 
 function openWifiDialog() {
     document.getElementById("wifiDialog").classList.remove("hidden");
