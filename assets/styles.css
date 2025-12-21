@@ -1,0 +1,38 @@
+.nav-btn {
+    width:100%; text-align:left; padding:10px;
+    border-radius:6px;
+}
+.nav-btn:hover { background:#334155; }
+
+.card {
+    background:white;
+    color: black;
+    padding:16px;
+    border-radius:8px;
+    box-shadow:0 4px 6px rgba(0,0,0,.1);
+}
+.dark .card {
+    background:#1e293b; color: white;
+    .btn-gray { color: black; background:#e5e7eb;padding:8px 14px;border-radius:6px; }
+}
+
+.dark .wifi {
+    color: white;
+}
+
+.card-title {
+    font-weight:600;
+    margin-bottom:12px;
+}
+
+.btn-blue { background:#2563eb;color:white;padding:8px 14px;border-radius:6px; }
+.btn-green { background:#16a34a;color:white;padding:8px 14px;border-radius:6px; }
+.btn-gray { background:#e5e7eb;padding:8px 14px;border-radius:6px; }
+.btn-red { background:#dc2626;color:white;padding:8px 14px;border-radius:6px; }
+
+.input {
+    width:100%;
+    margin-top:8px;
+    padding:8px;
+    border-radius:6px;
+}
