@@ -245,3 +245,17 @@ document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
   setInterval(loadCapturedImages, 10000);
 });
+
+window.navigate = navigate;
+window.startStream = startStream;
+window.stopStream = stopStream;
+window.captureImage = captureImage;
+window.viewImage = viewImage;
+window.closeImageModal = closeImageModal;
+window.deleteImage = deleteImage;
+window.factoryReset = factoryReset;
+window.submitWifi = submitWifi;
+window.closeWifiDialog = closeWifiDialog;
+window.openWifiDialog = openWifiDialog;
+window.toggleDarkMode = toggleDarkMode;
+window.toggleSidebar = toggleSidebar;
