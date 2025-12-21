@@ -100,6 +100,10 @@ function navigate(id) {
     if (id === "stream") {
       loadCapturedImages();
     }
+    else if (id === "system") {
+      loadSystemStatus();
+      setInterval(loadSystemStatus, 5000);
+    }
 }
 
 function toggleDarkMode() {
@@ -247,6 +251,69 @@ function factoryReset() {
     })
 }
 
+async function resetPassword() {
+  const oldPass = document.getElementById("oldPassword").value;
+  const newPass = document.getElementById("newPassword").value;
+  const confirmPass = document.getElementById("confirmPassword").value;
+
+  if (!oldPass || !newPass || !confirmPass) {
+    alert("All fields are required");
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    alert("New passwords do not match");
+    return;
+  }
+
+  try {
+    const res = await fetch("/reset-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        oldPassword: oldPass,
+        newPassword: newPass
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 200 && data.status === "ok") {
+      alert("✅ Password updated successfully");
+    } else if (res.status === 401) {
+      alert("❌ Old password is incorrect");
+    } else {
+      alert("❌ Failed to update password");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Network error");
+  }
+}
+
+async function loadSystemStatus() {
+  try {
+    const res = await fetch("/system/status");
+    const data = await res.json();
+
+    document.getElementById("uptime").innerText = data.uptimeHuman;
+
+    const door = document.getElementById("doorStatus");
+    door.innerText = data.doorStatus;
+
+    door.className =
+      data.doorStatus === "LOCKED"
+        ? "text-green-500 font-semibold"
+        : "text-red-500 font-semibold";
+
+  } catch (e) {
+    console.error("System status error", e);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
   setInterval(loadCapturedImages, 10000);
@@ -265,3 +332,5 @@ window.closeWifiDialog = closeWifiDialog;
 window.openWifiDialog = openWifiDialog;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleSidebar = toggleSidebar;
+window.resetPassword = resetPassword;
+window.loadSystemStatus = loadSystemStatus;
