@@ -237,7 +237,11 @@ function submitWifi() {
 
     status.innerText = "System rebooting...";
     fetch(`/wifi?ssid=${encodeURIComponent(ssid)}&pass=${encodeURIComponent(pass)}`, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: `ssid=${encodeURIComponent(ssid)}&pass=${encodeURIComponent(pass)}`
     })
       .then(() => {
         status.innerText = "✅ Credentials sent to system ...";
