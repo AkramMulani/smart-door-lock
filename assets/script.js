@@ -371,7 +371,7 @@ async function loadCurrentUserRole() {
  RBAC
 *****************************************************/
 function applyRBAC() {
-  if (currentUser.role === "admin") {
+  if (currentUser && currentUser.role === "admin") {
     addUserBtn.classList.remove("hidden");
   } else {
     addUserBtn.classList.add("hidden");
