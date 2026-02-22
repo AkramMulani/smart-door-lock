@@ -384,6 +384,8 @@ function applyRBAC() {
 async function loadUsers() {
   tableBody.innerHTML = "";
 
+  if (!currentUser) return;
+
   const querySnapshot = await getDocs(collection(db, "users"));
 
   querySnapshot.forEach((doc) => {
