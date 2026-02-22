@@ -109,6 +109,8 @@ function navigate(id) {
     document.getElementById(id).classList.remove('hidden');
     document.getElementById('pageTitle').innerText =
         id.charAt(0).toUpperCase() + id.slice(1);
+    document.getElementById('loginSection').classList.add('hidden');
+    
     if (window.innerWidth < 768) toggleSidebar();
     if (id === "stream") {
       loadCapturedImages();
