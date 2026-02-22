@@ -110,7 +110,7 @@ function navigate(id) {
     document.getElementById('pageTitle').innerText =
         id.charAt(0).toUpperCase() + id.slice(1);
     document.getElementById('loginSection').classList.add('hidden');
-    
+
     if (window.innerWidth < 768) toggleSidebar();
     if (id === "stream") {
       loadCapturedImages();
@@ -358,6 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
  LOAD CURRENT USER ROLE FROM FIRESTORE
 *****************************************************/
 async function loadCurrentUserRole() {
+  if (currentUser === null) return;
   const userRef = doc(db, "users", currentUser.uid);
   const snap = await getDoc(userRef);
 
@@ -585,16 +586,23 @@ window.closeDialog = function () {
 let confirmationResult;
 let currentUser = null;
 
-/****************************************************
- INIT RECAPTCHA
-*****************************************************/
-window.recaptchaVerifier = new RecaptchaVerifier(
-  'recaptcha-container',
-  {
-    size: 'normal'
-  },
-  auth
-);
+let recaptchaVerifier;
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  recaptchaVerifier = new RecaptchaVerifier(
+    auth,
+    "recaptcha-container",
+    {
+      size: "normal",
+      callback: (response) => {
+        console.log("reCAPTCHA solved");
+      }
+    }
+  );
+
+  recaptchaVerifier.render();
+});
 
 /****************************************************
  SEND OTP
@@ -612,7 +620,7 @@ document.getElementById("sendOtpBtn").addEventListener("click", async () => {
     confirmationResult = await signInWithPhoneNumber(
       auth,
       phoneNumber,
-      window.recaptchaVerifier
+      recaptchaVerifier
     );
 
     document.getElementById("phoneStep").classList.add("hidden");
