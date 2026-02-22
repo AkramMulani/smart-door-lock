@@ -379,8 +379,8 @@ async function loadUsers() {
 
   const querySnapshot = await getDocs(collection(db, "users"));
 
-  querySnapshot.forEach((document) => {
-    const user = { id: document.id, ...document.data() };
+  querySnapshot.forEach((doc) => {
+    const user = { id: doc.id, ...doc.data() };
 
     const tr = document.createElement("tr");
     tr.className = "border-b dark:border-slate-700";
