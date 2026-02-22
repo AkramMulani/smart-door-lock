@@ -320,6 +320,147 @@ async function loadSystemStatus() {
   }
 }
 
+/****************************************************
+ SMART DOOR LOCK - USERS MANAGEMENT + RBAC
+*****************************************************/
+
+// Simulated logged in user
+const currentUser = {
+  name: "Ak",
+  role: "admin" // change to "user" to test restriction
+};
+
+// Users Data (Can later be fetched from ESP via API)
+let users = [
+  {
+    id: 1,
+    name: "Ak",
+    mobile: "+91 9XXXXXXXXX",
+    role: "admin",
+    lastUsed: "2025-12-18"
+  },
+  {
+    id: 2,
+    name: "Rahul",
+    mobile: "+91 8XXXXXXXXX",
+    role: "user",
+    lastUsed: "2025-12-15"
+  }
+];
+
+const tableBody = document.getElementById("usersTableBody");
+const addUserBtn = document.getElementById("addUserBtn");
+
+/****************************************************
+ INITIALIZE
+*****************************************************/
+document.addEventListener("DOMContentLoaded", () => {
+  applyRBAC();
+  renderUsers();
+});
+
+/****************************************************
+ RBAC CONTROL
+*****************************************************/
+function applyRBAC() {
+  if (currentUser.role === "admin") {
+    addUserBtn.classList.remove("hidden");
+  } else {
+    addUserBtn.classList.add("hidden");
+  }
+}
+
+/****************************************************
+ RENDER USERS
+*****************************************************/
+function renderUsers() {
+  tableBody.innerHTML = "";
+
+  users.forEach(user => {
+    const tr = document.createElement("tr");
+    tr.className = "border-b dark:border-slate-700";
+
+    tr.innerHTML = `
+      <td class="p-2">${user.name}</td>
+      <td class="p-2">${user.mobile}</td>
+      <td class="p-2">
+        <span class="${user.role === "admin" ? "text-blue-600" : "text-gray-600"}">
+          ${user.role}
+        </span>
+      </td>
+      <td class="p-2">${user.lastUsed}</td>
+      <td class="p-2 text-center space-x-2">
+        ${
+          currentUser.role === "admin"
+            ? `
+            <button onclick="editUser(${user.id})" class="btn-gray">Edit</button>
+            <button onclick="deleteUser(${user.id})" class="btn-red">Delete</button>
+            `
+            : `<span class="text-xs text-gray-400">No Permission</span>`
+        }
+      </td>
+    `;
+
+    tableBody.appendChild(tr);
+  });
+}
+
+/****************************************************
+ EDIT USER (Admin Only)
+*****************************************************/
+function editUser(id) {
+  if (currentUser.role !== "admin") {
+    alert("Access Denied: Admin Only");
+    return;
+  }
+
+  const user = users.find(u => u.id === id);
+
+  const newName = prompt("Enter new name:", user.name);
+  const newMobile = prompt("Enter new mobile:", user.mobile);
+
+  if (newName && newMobile) {
+    user.name = newName;
+    user.mobile = newMobile;
+    renderUsers();
+  }
+}
+
+/****************************************************
+ DELETE USER (Admin Only)
+*****************************************************/
+function deleteUser(id) {
+  if (currentUser.role !== "admin") {
+    alert("Access Denied: Admin Only");
+    return;
+  }
+
+  if (confirm("Are you sure you want to delete this user?")) {
+    users = users.filter(u => u.id !== id);
+    renderUsers();
+  }
+}
+
+/****************************************************
+ ADD USER
+*****************************************************/
+addUserBtn.addEventListener("click", () => {
+  const name = prompt("Enter user name:");
+  const mobile = prompt("Enter mobile number:");
+
+  if (name && mobile) {
+    users.push({
+      id: Date.now(),
+      name,
+      mobile,
+      role: "user",
+      lastUsed: "-"
+    });
+
+    renderUsers();
+  }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
   setInterval(loadCapturedImages, 10000);
