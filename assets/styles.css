@@ -82,3 +82,9 @@
   border: 1px solid #ccc;
   border-radius: 6px;
 }
+
+.dark .dialog-input {
+  background: #334155;
+  color: white;
+  border: 1px solid #475569;
+}

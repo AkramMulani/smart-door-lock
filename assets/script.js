@@ -502,7 +502,7 @@ window.editUserDialog = async function (id) {
         </select>
 
         <div class="dialog-actions">
-          <button class="btn-gray" onclick="closeDialog()">Cancel</button>
+          <button class="btn-red" onclick="closeDialog()">Cancel</button>
           <button class="btn-blue" onclick="confirmEditUser('${id}')">Update</button>
         </div>
       </div>
@@ -556,7 +556,7 @@ window.deleteUserDialog = async function (id) {
         </p>
 
         <div class="dialog-actions">
-          <button class="btn-gray" onclick="closeDialog()">Cancel</button>
+          <button class="btn-red-400" onclick="closeDialog()">Cancel</button>
           <button class="btn-red" onclick="confirmDeleteUser('${id}')">Delete</button>
         </div>
       </div>
