@@ -481,3 +481,5 @@ window.toggleDarkMode = toggleDarkMode;
 window.toggleSidebar = toggleSidebar;
 window.resetPassword = resetPassword;
 window.loadSystemStatus = loadSystemStatus;
+window.editUser = editUser;
+window.deleteUser = deleteUser;
