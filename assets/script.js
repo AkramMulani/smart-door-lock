@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -10,12 +11,22 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import { 
+  getAuth, 
+  RecaptchaVerifier, 
+  signInWithPhoneNumber,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyCTV1GjkC_vuEQelMVOgWSawsK2i8jhSu4",
   projectId: "smart-lock-genius-kods",
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
 async function loadCapturedImages() {
@@ -325,13 +336,6 @@ async function loadSystemStatus() {
 /****************************************************
  SMART DOOR LOCK - USERS MANAGEMENT + RBAC
 *****************************************************/
-/****************************************************
- CURRENT LOGGED IN USER (Later replace with Firebase Auth)
-*****************************************************/
-let currentUser = {
-  uid: "temp_admin_id",
-  role: "admin"
-};
 
 /****************************************************
  DOM REFERENCES
@@ -576,6 +580,100 @@ window.closeDialog = function () {
   document.getElementById("dialogContainer").innerHTML = "";
 };
 
+let confirmationResult;
+let currentUser = null;
+
+/****************************************************
+ INIT RECAPTCHA
+*****************************************************/
+window.recaptchaVerifier = new RecaptchaVerifier(
+  'recaptcha-container',
+  {
+    size: 'normal'
+  },
+  auth
+);
+
+/****************************************************
+ SEND OTP
+*****************************************************/
+document.getElementById("sendOtpBtn").addEventListener("click", async () => {
+
+  const phoneNumber = document.getElementById("phoneNumber").value.trim();
+
+  if (!phoneNumber.startsWith("+")) {
+    alert("Use country code. Example: +91XXXXXXXXXX");
+    return;
+  }
+
+  try {
+    confirmationResult = await signInWithPhoneNumber(
+      auth,
+      phoneNumber,
+      window.recaptchaVerifier
+    );
+
+    document.getElementById("phoneStep").classList.add("hidden");
+    document.getElementById("otpStep").classList.remove("hidden");
+
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+/****************************************************
+ VERIFY OTP
+*****************************************************/
+document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
+
+  const code = document.getElementById("otpCode").value.trim();
+
+  try {
+    const result = await confirmationResult.confirm(code);
+    currentUser = result.user;
+
+  } catch (error) {
+    alert("Invalid OTP");
+  }
+});
+
+/****************************************************
+ AUTH STATE LISTENER
+*****************************************************/
+onAuthStateChanged(auth, async (user) => {
+
+  if (user) {
+    currentUser = user;
+
+    await loadUserRole(user.uid);
+
+    document.getElementById("loginSection").classList.add("hidden");
+    document.getElementById("appSection").classList.remove("hidden");
+
+  } else {
+    document.getElementById("loginSection").classList.remove("hidden");
+    document.getElementById("appSection").classList.add("hidden");
+  }
+});
+
+/****************************************************
+ LOAD ROLE FROM FIRESTORE
+*****************************************************/
+async function loadUserRole(uid) {
+
+  const snap = await getDoc(doc(db, "users", uid));
+
+  if (!snap.exists()) {
+    alert("User not registered in system");
+    return;
+  }
+
+  currentUser = { uid, ...snap.data() };
+}
+
+window.logout = async function () {
+  await signOut(auth);
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
