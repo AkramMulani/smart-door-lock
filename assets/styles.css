@@ -43,3 +43,42 @@
 #imagesTable::-webkit-scrollbar {
     width: 6px;
 }
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.dialog-box {
+  background: white;
+  width: 400px;
+  max-width: 90%;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.dark .dialog-box {
+  background: #1e293b;
+  color: white;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dialog-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}

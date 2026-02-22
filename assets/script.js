@@ -394,8 +394,8 @@ async function loadUsers() {
         ${
           currentUser.role === "admin"
             ? `
-            <button onclick="editUser('${user.id}')" class="btn-gray">Edit</button>
-            <button onclick="deleteUser('${user.id}')" class="btn-red">Delete</button>
+            <button onclick="editUserDialog('${user.id}')" class="btn-gray">Edit</button>
+            <button onclick="deleteUserDialog('${user.id}')" class="btn-red">Delete</button>
             `
             : `<span class="text-xs text-gray-400">No Permission</span>`
         }
@@ -469,6 +469,113 @@ async function deleteUser(id) {
 
   loadUsers();
 };
+
+window.editUserDialog = async function (id) {
+
+  if (currentUser.role !== "admin") {
+    alert("Access Denied");
+    return;
+  }
+
+  const userRef = doc(db, "users", id);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return;
+
+  const user = snap.data();
+  const container = document.getElementById("dialogContainer");
+
+  container.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-box">
+        <h3>Edit User</h3>
+
+        <label>Name</label>
+        <input id="editName" class="dialog-input" value="${user.name}" />
+
+        <label>Mobile</label>
+        <input id="editMobile" class="dialog-input" value="${user.mobile}" />
+
+        <label>Role</label>
+        <select id="editRole" class="dialog-input">
+          <option value="user" ${user.role === "user" ? "selected" : ""}>User</option>
+          <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+        </select>
+
+        <div class="dialog-actions">
+          <button class="btn-gray" onclick="closeDialog()">Cancel</button>
+          <button class="btn-blue" onclick="confirmEditUser('${id}')">Update</button>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+window.confirmEditUser = async function (id) {
+
+  const newName = document.getElementById("editName").value.trim();
+  const newMobile = document.getElementById("editMobile").value.trim();
+  const newRole = document.getElementById("editRole").value;
+
+  if (!newName || !newMobile) {
+    alert("All fields required");
+    return;
+  }
+
+  await updateDoc(doc(db, "users", id), {
+    name: newName,
+    mobile: newMobile,
+    role: newRole
+  });
+
+  closeDialog();
+  loadUsers();
+};
+
+window.deleteUserDialog = async function (id) {
+
+  if (currentUser.role !== "admin") {
+    alert("Access Denied");
+    return;
+  }
+
+  const snap = await getDoc(doc(db, "users", id));
+  if (!snap.exists()) return;
+
+  const user = snap.data();
+  const container = document.getElementById("dialogContainer");
+
+  container.innerHTML = `
+    <div class="dialog-overlay">
+      <div class="dialog-box">
+        <h3 style="color:red;">Delete User</h3>
+
+        <p>
+          You are going to delete:<br><br>
+          <strong>${user.name}</strong><br>
+          ${user.mobile}
+        </p>
+
+        <div class="dialog-actions">
+          <button class="btn-gray" onclick="closeDialog()">Cancel</button>
+          <button class="btn-red" onclick="confirmDeleteUser('${id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+window.confirmDeleteUser = async function (id) {
+
+  await deleteDoc(doc(db, "users", id));
+
+  closeDialog();
+  loadUsers();
+};
+
+window.closeDialog = function () {
+  document.getElementById("dialogContainer").innerHTML = "";
+};
+
 
 document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
