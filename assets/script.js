@@ -323,44 +323,43 @@ async function loadSystemStatus() {
 /****************************************************
  SMART DOOR LOCK - USERS MANAGEMENT + RBAC
 *****************************************************/
-
-// Simulated logged in user
-const currentUser = {
-  name: "Ak",
-  role: "admin" // change to "user" to test restriction
+/****************************************************
+ CURRENT LOGGED IN USER (Later replace with Firebase Auth)
+*****************************************************/
+let currentUser = {
+  uid: "temp_admin_id",
+  role: "admin"
 };
 
-// Users Data (Can later be fetched from ESP via API)
-let users = [
-  {
-    id: 1,
-    name: "Ak",
-    mobile: "+91 9XXXXXXXXX",
-    role: "admin",
-    lastUsed: "2025-12-18"
-  },
-  {
-    id: 2,
-    name: "Rahul",
-    mobile: "+91 8XXXXXXXXX",
-    role: "user",
-    lastUsed: "2025-12-15"
-  }
-];
-
+/****************************************************
+ DOM REFERENCES
+*****************************************************/
 const tableBody = document.getElementById("usersTableBody");
 const addUserBtn = document.getElementById("addUserBtn");
 
 /****************************************************
- INITIALIZE
+ INITIAL LOAD
 *****************************************************/
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadCurrentUserRole();
   applyRBAC();
-  renderUsers();
+  loadUsers();
 });
 
 /****************************************************
- RBAC CONTROL
+ LOAD CURRENT USER ROLE FROM FIRESTORE
+*****************************************************/
+async function loadCurrentUserRole() {
+  const userRef = doc(db, "users", currentUser.uid);
+  const snap = await getDoc(userRef);
+
+  if (snap.exists()) {
+    currentUser = { uid: snap.id, ...snap.data() };
+  }
+}
+
+/****************************************************
+ RBAC
 *****************************************************/
 function applyRBAC() {
   if (currentUser.role === "admin") {
@@ -371,30 +370,30 @@ function applyRBAC() {
 }
 
 /****************************************************
- RENDER USERS
+ LOAD USERS FROM FIRESTORE
 *****************************************************/
-function renderUsers() {
+async function loadUsers() {
   tableBody.innerHTML = "";
 
-  users.forEach(user => {
+  const querySnapshot = await getDocs(collection(db, "users"));
+
+  querySnapshot.forEach((document) => {
+    const user = { id: document.id, ...document.data() };
+
     const tr = document.createElement("tr");
     tr.className = "border-b dark:border-slate-700";
 
     tr.innerHTML = `
       <td class="p-2">${user.name}</td>
       <td class="p-2">${user.mobile}</td>
-      <td class="p-2">
-        <span class="${user.role === "admin" ? "text-blue-600" : "text-gray-600"}">
-          ${user.role}
-        </span>
-      </td>
-      <td class="p-2">${user.lastUsed}</td>
+      <td class="p-2">${user.role}</td>
+      <td class="p-2">${user.lastUsed || "-"}</td>
       <td class="p-2 text-center space-x-2">
         ${
           currentUser.role === "admin"
             ? `
-            <button onclick="editUser(${user.id})" class="btn-gray">Edit</button>
-            <button onclick="deleteUser(${user.id})" class="btn-red">Delete</button>
+            <button onclick="editUser('${user.id}')" class="btn-gray">Edit</button>
+            <button onclick="deleteUser('${user.id}')" class="btn-red">Delete</button>
             `
             : `<span class="text-xs text-gray-400">No Permission</span>`
         }
@@ -406,60 +405,68 @@ function renderUsers() {
 }
 
 /****************************************************
- EDIT USER (Admin Only)
-*****************************************************/
-function editUser(id) {
-  if (currentUser.role !== "admin") {
-    alert("Access Denied: Admin Only");
-    return;
-  }
-
-  const user = users.find(u => u.id === id);
-
-  const newName = prompt("Enter new name:", user.name);
-  const newMobile = prompt("Enter new mobile:", user.mobile);
-
-  if (newName && newMobile) {
-    user.name = newName;
-    user.mobile = newMobile;
-    renderUsers();
-  }
-}
-
-/****************************************************
- DELETE USER (Admin Only)
-*****************************************************/
-function deleteUser(id) {
-  if (currentUser.role !== "admin") {
-    alert("Access Denied: Admin Only");
-    return;
-  }
-
-  if (confirm("Are you sure you want to delete this user?")) {
-    users = users.filter(u => u.id !== id);
-    renderUsers();
-  }
-}
-
-/****************************************************
  ADD USER
 *****************************************************/
-addUserBtn.addEventListener("click", () => {
+addUserBtn.addEventListener("click", async () => {
   const name = prompt("Enter user name:");
   const mobile = prompt("Enter mobile number:");
 
-  if (name && mobile) {
-    users.push({
-      id: Date.now(),
-      name,
-      mobile,
-      role: "user",
-      lastUsed: "-"
-    });
+  if (!name || !mobile) return;
 
-    renderUsers();
-  }
+  await addDoc(collection(db, "users"), {
+    name,
+    mobile,
+    role: "user",
+    lastUsed: "-"
+  });
+
+  loadUsers();
 });
+
+/****************************************************
+ EDIT USER
+*****************************************************/
+async function editUser(id) {
+  if (currentUser.role !== "admin") {
+    alert("Access Denied");
+    return;
+  }
+
+  const userRef = doc(db, "users", id);
+  const snap = await getDoc(userRef);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  const newName = prompt("Edit name:", data.name);
+  const newMobile = prompt("Edit mobile:", data.mobile);
+
+  if (!newName || !newMobile) return;
+
+  await updateDoc(userRef, {
+    name: newName,
+    mobile: newMobile
+  });
+
+  loadUsers();
+};
+
+/****************************************************
+ DELETE USER
+*****************************************************/
+async function deleteUser(id) {
+  if (currentUser.role !== "admin") {
+    alert("Access Denied");
+    return;
+  }
+
+  if (!confirm("Delete this user?")) return;
+
+  await deleteDoc(doc(db, "users", id));
+
+  loadUsers();
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   navigate("stream");
